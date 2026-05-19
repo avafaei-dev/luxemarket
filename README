@@ -1,0 +1,24 @@
+# LuxeMarket Intelligence
+
+> A market intelligence platform for luxury vehicles — deal scoring, valuation modeling, and trend analytics.
+
+## Quickstart
+
+```bash
+make up       # start Postgres + Redis
+make migrate  # run DB migrations
+make seed     # seed 1,500 listings
+make valuate  # compute valuations + deal scores
+make test     # run backend tests
+```
+
+## Stack
+
+| Layer | Tech |
+|---|---|
+| Backend | FastAPI, Python 3.12 |
+| Database | PostgreSQL 16 |
+| Cache | Redis 7 |
+| ML | scikit-learn, pandas |
+| Frontend | Next.js 14, React, Tailwind |
+| Infra | Docker, GitHub Actions |
