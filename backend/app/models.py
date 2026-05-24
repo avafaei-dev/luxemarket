@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
     Column, String, Integer, Numeric, Boolean,
-    Text, DateTime, Date, ForeignKey, JSON
+    Text, DateTime, Date, ForeignKey, JSON, Index
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, relationship
@@ -16,6 +16,12 @@ def utcnow():
 
 class Listing(Base):
     __tablename__ = "listings"
+    __table_args__ = (
+        Index("ix_listings_make_model_year", "make", "model", "year"),
+        Index("ix_listings_price", "price"),
+        Index("ix_listings_listed_at", "listed_at"),
+        Index("ix_listings_is_active", "is_active"),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     source = Column(String(50), nullable=False, default="mock")
