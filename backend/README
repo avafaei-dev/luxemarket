@@ -1,0 +1,63 @@
+# LuxeMarket — Backend
+
+FastAPI backend with PostgreSQL, Redis, and a scikit-learn valuation model.
+
+## Requirements
+
+- Python 3.12+
+- Docker Desktop (for Postgres + Redis)
+
+## Quickstart
+
+```bash
+# 1. Start infrastructure
+make up
+
+# 2. Create virtual environment
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# 3. Run migrations
+make migrate
+
+# 4. Seed data
+make seed
+
+# 5. Compute valuations and deal scores
+make valuate
+
+# 6. Start dev server
+make dev
+
+# Open http://localhost:8000/docs
+```
+
+## Environment variables
+
+Copy `.env.example` to `backend/.env`. Defaults work with Docker Compose.
+
+| Variable | Default | Description |
+|---|---|---|
+| `DATABASE_URL` | `postgresql://luxe:luxe_dev@localhost:5432/luxemarket` | Postgres connection string |
+| `REDIS_URL` | `redis://localhost:6379` | Redis connection string |
+| `APP_ENV` | `development` | Environment name |
+| `SECRET_KEY` | `change_me_in_production` | App secret (change in prod!) |
+
+## API
+
+Swagger UI available at `http://localhost:8000/docs` when server is running.
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/health` | Liveness check |
+| `GET /api/v1/listings` | Paginated listings with filters |
+| `GET /api/v1/listings/top-deals` | Listings with deal score > 60 |
+| `GET /api/v1/listings/{id}` | Single listing with valuation |
+| `GET /api/v1/makes` | All makes with listing counts |
+| `GET /api/v1/makes/{make}/models` | Models for a specific make |
+| `GET /api/v1/trends` | Market snapshots by make/model |
+| `GET /api/v1/trends/summary` | Dashboard summary stats |
+
+## Data pipeline
