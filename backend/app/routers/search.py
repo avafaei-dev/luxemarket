@@ -23,7 +23,7 @@ def search_listings(filters: SearchFilters, db: Session = Depends(get_db)):
     q = (
         db.query(Listing)
         .options(joinedload(Listing.deal_score), joinedload(Listing.valuation))
-        .filter(Listing.is_active == True)
+        .filter(Listing.is_active.is_(True))
     )
 
     # Free-text search across make, model, description

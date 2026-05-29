@@ -56,12 +56,12 @@ def get_trends_summary(db: Session = Depends(get_db)):
     if cached:
         return cached
 
-    total = db.query(func.count(Listing.id)).filter(Listing.is_active == True).scalar()
-    avg_price = db.query(func.avg(Listing.price)).filter(Listing.is_active == True).scalar()
+    total = db.query(func.count(Listing.id)).filter(Listing.is_active.is_(True)).scalar()
+    avg_price = db.query(func.avg(Listing.price)).filter(Listing.is_active.is_(True)).scalar()
     avg_score = db.query(func.avg(DealScore.score)).scalar()
     top_make = (
         db.query(Listing.make, func.count(Listing.id).label("cnt"))
-        .filter(Listing.is_active == True)
+        .filter(Listing.is_active.is_(True))
         .group_by(Listing.make)
         .order_by(func.count(Listing.id).desc())
         .first()

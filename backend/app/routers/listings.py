@@ -4,7 +4,7 @@ from sqlalchemy import func
 from typing import Literal
 from app.database import get_db
 from app.models import Listing, DealScore
-from app.schemas import ListingOut, ListingBrief, ListingsResponse
+from app.schemas import ListingOut, ListingsResponse
 from app.cache import cache_get, cache_set, make_cache_key
 
 router = APIRouter(prefix="/api/v1", tags=["listings"])
@@ -45,7 +45,7 @@ def get_listings(
     q = (
         db.query(Listing)
         .options(joinedload(Listing.deal_score), joinedload(Listing.valuation))
-        .filter(Listing.is_active == True)
+        .filter(Listing.is_active.is_(True))
     )
 
     if make:
@@ -100,7 +100,7 @@ def get_top_deals(
         db.query(Listing)
         .options(joinedload(Listing.deal_score), joinedload(Listing.valuation))
         .join(DealScore)
-        .filter(Listing.is_active == True, DealScore.score >= 60)
+        .filter(Listing.is_active.is_(True), DealScore.score >= 60)
         .order_by(DealScore.score.desc())
     )
     total = q.count()
@@ -119,7 +119,7 @@ def get_listing(listing_id: str, db: Session = Depends(get_db)):
     listing = (
         db.query(Listing)
         .options(joinedload(Listing.deal_score), joinedload(Listing.valuation))
-        .filter(Listing.id == listing_id, Listing.is_active == True)
+        .filter(Listing.id == listing_id, Listing.is_active.is_(True))
         .first()
     )
     if not listing:

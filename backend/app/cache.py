@@ -1,7 +1,6 @@
 import json
 import logging
 from typing import Any
-from functools import wraps
 
 import redis
 from app.config import get_settings

@@ -15,7 +15,7 @@ import random
 import argparse
 from datetime import datetime, timedelta, timezone
 
-# Add backend/ to path so we can import app modules
+# Add backend/ to path so can import app modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../backend"))
 
 from faker import Faker
