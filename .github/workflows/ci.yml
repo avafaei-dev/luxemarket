@@ -54,33 +54,22 @@ jobs:
           cache-dependency-path: backend/requirements.txt
 
       - name: Install dependencies
-        run: |
-          cd backend
-          pip install -r requirements.txt
+        working-directory: backend
+        run: pip install -r requirements.txt
 
       - name: Run migrations
         working-directory: backend
-        run: |
-          cd backend
-          alembic upgrade head
+        run: alembic upgrade head
 
       - name: Seed test data
-        working-directory: backend
-        run: |
-          cd backend
-          python -m pytest tests/ --co -q  # dry collect first
-          python ../data/seeds/seed.py --count 200
+        run: python data/seeds/seed.py --count 200
 
       - name: Run valuation pipeline
-        working-directory: backend
-        run: |
-          python data/valuate.py
+        run: python data/valuate.py
 
       - name: Run tests
         working-directory: backend
-        run: |
-          cd backend
-          pytest tests/ -v --tb=short
+        run: pytest tests/ -v --tb=short
 
   lint:
     name: Lint
@@ -99,6 +88,5 @@ jobs:
         run: pip install ruff
 
       - name: Run ruff
-        run: |
-          cd backend
-          ruff check app/ --select E,F,W --ignore E501
+        working-directory: backend
+        run: ruff check app/ --select E,F,W --ignore E501
