@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import health, listings, makes, trends
+from app.routers import health, listings, makes, trends, search, valuations
+
 
 app = FastAPI(
     title="LuxeMarket Intelligence API",
@@ -22,8 +23,10 @@ app.include_router(health.router)
 app.include_router(listings.router)
 app.include_router(makes.router)
 app.include_router(trends.router)
+app.include_router(search.router)
+app.include_router(valuations.router)
 
 
 @app.get("/")
 def root():
-    return {"name": "LuxeMarket Intelligence API", "docs": "/docs"}
+    return {"name": "LuxeMarket Intelligence API", "version": "0.2.0", "docs": "/docs"}

@@ -113,3 +113,39 @@ class HealthResponse(BaseModel):
     db: str
     redis: str
     environment: str
+
+
+# ── Search ────────────────────────────────────────────────────────────────────
+
+class SearchFilters(BaseModel):
+    """Body payload for POST /listings/search"""
+    query: str | None = None          # free-text search against make, model, description
+    make: list[str] | None = None     # e.g. ["BMW", "Porsche"]
+    model: list[str] | None = None
+    year_min: int | None = None
+    year_max: int | None = None
+    price_min: float | None = None
+    price_max: float | None = None
+    mileage_max: int | None = None
+    condition: list[str] | None = None   # ["new", "used", "cpo"]
+    location_state: list[str] | None = None
+    min_deal_score: float | None = None
+    sort: str = "score_desc"
+    page: int = 1
+    limit: int = 20
+
+
+# ── Valuation detail ──────────────────────────────────────────────────────────
+
+class ValuationDetail(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    listing_id: UUID
+    estimated_value: Decimal | None
+    confidence: Decimal | None
+    comp_count: int | None
+    method: str | None
+    model_version: str | None
+    computed_at: datetime | None
+    listing: ListingBrief | None = None
