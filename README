@@ -1,5 +1,7 @@
 # LuxeMarket Intelligence
 
+[![CI](https://github.com/avafaei-dev/luxemarket/actions/workflows/ci.yml/badge.svg)](https://github.com/avafaei-dev/luxemarket/actions/workflows/ci.yml)
+
 > A market intelligence platform for luxury vehicles — deal scoring, valuation modeling, and trend analytics.
 
 ## Quickstart
