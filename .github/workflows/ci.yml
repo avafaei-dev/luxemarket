@@ -59,21 +59,25 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run migrations
+        working-directory: backend
         run: |
           cd backend
           alembic upgrade head
 
       - name: Seed test data
+        working-directory: backend
         run: |
           cd backend
           python -m pytest tests/ --co -q  # dry collect first
           python ../data/seeds/seed.py --count 200
 
       - name: Run valuation pipeline
+        working-directory: backend
         run: |
           python data/valuate.py
 
       - name: Run tests
+        working-directory: backend
         run: |
           cd backend
           pytest tests/ -v --tb=short
