@@ -15,6 +15,7 @@ def test_health_response_shape():
     data = response.json()
     assert "status" in data
     assert "db" in data
+    assert "redis" in data
     assert data["status"] == "ok"
 
 

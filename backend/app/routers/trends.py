@@ -3,8 +3,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.database import get_db
 from app.models import Listing, DealScore, MarketSnapshot
+from app.cache import cache_get, cache_set, make_cache_key
 
 router = APIRouter(prefix="/api/v1", tags=["trends"])
+
+TRENDS_TTL = 300        # 5 minutes — snapshots only update nightly
+SUMMARY_TTL = 120       # 2 minutes
 
 
 @router.get("/trends")
@@ -13,6 +17,11 @@ def get_trends(
     model: str | None = Query(None),
     db: Session = Depends(get_db),
 ):
+    cache_key = make_cache_key("trends", str(make), str(model))
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
     q = db.query(MarketSnapshot)
     if make:
         q = q.filter(func.lower(MarketSnapshot.make) == make.lower())
@@ -34,11 +43,19 @@ def get_trends(
         }
         for r in rows
     ]
-    return {"data": data, "total": len(data)}
+
+    result = {"data": data, "total": len(data)}
+    cache_set(cache_key, result, ttl=TRENDS_TTL)
+    return result
 
 
 @router.get("/trends/summary")
 def get_trends_summary(db: Session = Depends(get_db)):
+    cache_key = make_cache_key("trends", "summary")
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
     total = db.query(func.count(Listing.id)).filter(Listing.is_active == True).scalar()
     avg_price = db.query(func.avg(Listing.price)).filter(Listing.is_active == True).scalar()
     avg_score = db.query(func.avg(DealScore.score)).scalar()
@@ -50,9 +67,12 @@ def get_trends_summary(db: Session = Depends(get_db)):
         .first()
     )
 
-    return {
+    result = {
         "total_listings": total or 0,
         "avg_price": round(float(avg_price), 2) if avg_price else 0,
         "avg_deal_score": round(float(avg_score), 1) if avg_score else 0,
         "top_make": top_make.make if top_make else None,
     }
+
+    cache_set(cache_key, result, ttl=SUMMARY_TTL)
+    return result

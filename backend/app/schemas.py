@@ -111,4 +111,5 @@ class ModelCount(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     db: str
+    redis: str
     environment: str

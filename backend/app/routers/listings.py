@@ -5,8 +5,12 @@ from typing import Literal
 from app.database import get_db
 from app.models import Listing, DealScore
 from app.schemas import ListingOut, ListingBrief, ListingsResponse
+from app.cache import cache_get, cache_set, make_cache_key
 
 router = APIRouter(prefix="/api/v1", tags=["listings"])
+
+LISTINGS_TTL = 60       # seconds
+TOP_DEALS_TTL = 120     # slightly longer — changes less often
 
 
 @router.get("/listings", response_model=ListingsResponse)
@@ -25,6 +29,19 @@ def get_listings(
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
+    # Build cache key from all params
+    cache_key = make_cache_key(
+        "listings",
+        str(make), str(model), str(year_min), str(year_max),
+        str(price_min), str(price_max), str(mileage_max),
+        str(condition), str(location_state), sort,
+        str(page), str(limit),
+    )
+
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
     q = (
         db.query(Listing)
         .options(joinedload(Listing.deal_score), joinedload(Listing.valuation))
@@ -50,7 +67,6 @@ def get_listings(
     if location_state:
         q = q.filter(func.lower(Listing.location_state) == location_state.lower())
 
-    # Sorting
     if sort == "price_asc":
         q = q.order_by(Listing.price.asc())
     elif sort == "price_desc":
@@ -63,7 +79,11 @@ def get_listings(
     total = q.count()
     items = q.offset((page - 1) * limit).limit(limit).all()
 
-    return ListingsResponse(data=items, total=total, page=page, limit=limit)
+    result = ListingsResponse(data=items, total=total, page=page, limit=limit)
+    result_dict = result.model_dump(mode="json")
+    cache_set(cache_key, result_dict, ttl=LISTINGS_TTL)
+
+    return result
 
 
 @router.get("/listings/top-deals", response_model=ListingsResponse)
@@ -71,6 +91,11 @@ def get_top_deals(
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
+    cache_key = make_cache_key("top-deals", str(limit))
+    cached = cache_get(cache_key)
+    if cached:
+        return cached
+
     q = (
         db.query(Listing)
         .options(joinedload(Listing.deal_score), joinedload(Listing.valuation))
@@ -80,11 +105,17 @@ def get_top_deals(
     )
     total = q.count()
     items = q.limit(limit).all()
-    return ListingsResponse(data=items, total=total, page=1, limit=limit)
+
+    result = ListingsResponse(data=items, total=total, page=1, limit=limit)
+    result_dict = result.model_dump(mode="json")
+    cache_set(cache_key, result_dict, ttl=TOP_DEALS_TTL)
+
+    return result
 
 
 @router.get("/listings/{listing_id}", response_model=ListingOut)
 def get_listing(listing_id: str, db: Session = Depends(get_db)):
+    # Individual listings are not cached — they're rarely repeated
     listing = (
         db.query(Listing)
         .options(joinedload(Listing.deal_score), joinedload(Listing.valuation))
