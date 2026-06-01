@@ -91,6 +91,11 @@ class ListingsResponse(BaseModel):
     total: int
     page: int
     limit: int
+    total_pages: int = 0    # computed field
+
+    def model_post_init(self, __context):
+        import math
+        self.total_pages = math.ceil(self.total / self.limit) if self.limit > 0 else 0
 
 
 # ── Makes ─────────────────────────────────────────────────────────────────────
