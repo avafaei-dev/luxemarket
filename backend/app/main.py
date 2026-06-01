@@ -19,7 +19,7 @@ class TimingMiddleware(BaseHTTPMiddleware):
         duration = time.perf_counter() - start
         response.headers["X-Response-Time"] = f"{duration * 1000:.2f}ms"
         return response
-    
+
 
 app = FastAPI(
     title="LuxeMarket Intelligence API",
