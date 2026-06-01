@@ -68,7 +68,30 @@ class ListingOut(BaseModel):
 
 class ListingBrief(BaseModel):
     """Lightweight version for list views — no heavy text fields."""
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": "a3f8c21d-7b4e-4c9a-8f1d-2e5b6a9c3d7f",
+                "make": "Porsche",
+                "model": "911 Turbo S",
+                "trim": None,
+                "year": 2022,
+                "mileage": 12500,
+                "price": "185000.00",
+                "location_city": "Beverly Hills",
+                "location_state": "CA",
+                "condition": "used",
+                "images": ["https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800"],
+                "listed_at": "2026-03-15T10:00:00Z",
+                "deal_score": {
+                    "score": "82.50",
+                    "discount_pct": "13.000",
+                    "price_delta": "-27500.00",
+                },
+            }
+        },
+    )
 
     id: UUID
     make: str
