@@ -1,74 +1,77 @@
 # LuxeMarket — Backend
 
-FastAPI backend with PostgreSQL, Redis, and a scikit-learn valuation model.
+FastAPI backend with PostgreSQL, Redis caching, and a scikit-learn valuation model.
 
 ## Requirements
 
 - Python 3.12+
-- Docker Desktop (for Postgres + Redis)
+- Docker Desktop
 
 ## Quickstart
 
 ```bash
-# 1. Start infrastructure
-make up
-
-# 2. Create virtual environment
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-# 3. Run migrations
-make migrate
-
-# 4. Seed data
-make seed
-
-# 5. Compute valuations and deal scores
-make valuate
-
-# 6. Start dev server
-make dev
-
-# Open http://localhost:8000/docs
+make up          # start Postgres + Redis
+make migrate     # run DB migrations
+make seed        # seed 1,500 listings
+make valuate     # compute valuations + deal scores
+make dev         # start API server at localhost:8000
+make test        # run test suite (50+ tests)
 ```
 
 ## Environment variables
 
-Copy `.env.example` to `backend/.env`. Defaults work with Docker Compose.
+Copy `.env.example` to `backend/.env`.
 
 | Variable | Default | Description |
 |---|---|---|
-| `DATABASE_URL` | `postgresql://luxe:luxe_dev@localhost:5432/luxemarket` | Postgres connection string |
-| `REDIS_URL` | `redis://localhost:6379` | Redis connection string |
+| `DATABASE_URL` | `postgresql://luxe:luxe_dev@localhost:5432/luxemarket` | Postgres connection |
+| `REDIS_URL` | `redis://localhost:6379` | Redis connection |
 | `APP_ENV` | `development` | Environment name |
-| `SECRET_KEY` | `change_me_in_production` | App secret (change in prod!) |
+| `SECRET_KEY` | `change_me_in_production` | App secret |
+| `LOG_LEVEL` | `INFO` | Logging level |
 
-## API
+## API endpoints
 
-Swagger UI available at `http://localhost:8000/docs` when server is running.
+Full interactive docs at `http://localhost:8000/docs`.
 
-| Endpoint | Description |
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/v1/health` | Liveness + DB + Redis status |
+| GET | `/api/v1/listings` | Paginated listings with filters |
+| GET | `/api/v1/listings/top-deals` | Listings with deal score ≥ 60 |
+| GET | `/api/v1/listings/{id}` | Single listing with valuation |
+| POST | `/api/v1/listings/search` | Full-text + faceted search |
+| GET | `/api/v1/makes` | All makes with counts |
+| GET | `/api/v1/makes/{make}/models` | Models for a make |
+| GET | `/api/v1/trends` | Market snapshots by make/model |
+| GET | `/api/v1/trends/summary` | Dashboard summary stats |
+| GET | `/api/v1/valuations/{listing_id}` | Valuation detail |
+| POST | `/api/v1/jobs/valuate` | Trigger valuation pipeline |
+| GET | `/api/v1/jobs/valuate/status` | Job status |
+
+## Caching
+
+Redis caches all list and trend endpoints. TTLs:
+
+| Endpoint | TTL |
 |---|---|
-| `GET /api/v1/health` | Liveness check |
-| `GET /api/v1/listings` | Paginated listings with filters |
-| `GET /api/v1/listings/top-deals` | Listings with deal score > 60 |
-| `GET /api/v1/listings/{id}` | Single listing with valuation |
-| `GET /api/v1/makes` | All makes with listing counts |
-| `GET /api/v1/makes/{make}/models` | Models for a specific make |
-| `GET /api/v1/trends` | Market snapshots by make/model |
-| `GET /api/v1/trends/summary` | Dashboard summary stats |
+| `/listings` | 60s |
+| `/listings/top-deals` | 120s |
+| `/trends` | 300s |
+| `/trends/summary` | 120s |
+| `/makes` | 300s |
+| `/listings/search` | 45s |
 
-## Data pipeline
-data/seeds/seed.py   →  Generates 1,500 mock listings  →  listings table
-data/valuate.py      →  Ridge regression model         →  valuations + deal_scores tables
-→  market_snapshots table
+## Valuation model
 
-## Running tests
+Ridge regression trained on make, model, year, mileage, condition, body style,
+and location. Log-transform applied to price and mileage before training.
+
+- Cross-val R²: **0.947 ± 0.002**
+- Deal score: `((estimated_value - price) / estimated_value * 100 + 20) / 40 * 100`, clipped 0–100
+
+## Tests
 
 ```bash
-cd backend
-source .venv/bin/activate
-pytest tests/ -v
+pytest tests/ -v   # 50+ tests across all endpoint groups
 ```
