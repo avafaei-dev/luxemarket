@@ -66,3 +66,17 @@ bootstrap: up migrate seed valuate
 	@echo "✓ LuxeMarket stack is ready!"
 	@echo "  Run: make dev"
 	@echo "  Open: http://localhost:8000/docs"
+
+
+# Clear Redis cache
+cache-clear:
+	curl -s -X DELETE http://localhost:8000/api/v1/cache | python -m json.tool
+
+# Trigger valuation job via API
+valuate-api:
+	curl -s -X POST http://localhost:8000/api/v1/jobs/valuate | python -m json.tool
+	@echo "Check status with: curl http://localhost:8000/api/v1/jobs/valuate/status"
+
+# Open API docs
+docs:
+	open http://localhost:8000/docs
