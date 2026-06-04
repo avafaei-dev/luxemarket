@@ -47,17 +47,18 @@ export interface Listing {
 }
 
 export interface ListingDetail extends Listing {
-  source: string;
-  color_exterior: string | null;
-  color_interior: string | null;
-  body_style: string | null;
-  transmission: string | null;
-  fuel_type: string | null;
-  description: string | null;
-  url: string | null;
-  currency: string;
-  is_active: boolean;
-}
+    source: string;
+    color_exterior: string | null;
+    color_interior: string | null;
+    vin: string | null;
+    body_style: string | null;
+    transmission: string | null;
+    fuel_type: string | null;
+    description: string | null;
+    url: string | null;
+    currency: string;
+    is_active: boolean;
+  }
 
 export interface ListingsResponse {
   data: Listing[];

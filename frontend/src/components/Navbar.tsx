@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
-import { Car, TrendingUp, Star, Search } from "lucide-react";
+import { Car, TrendingUp, Star, Search, Menu, X } from "lucide-react";
 
 const links = [
   { href: "/", label: "Browse", icon: Search },
@@ -13,6 +14,7 @@ const links = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <nav className="border-b border-gray-800 bg-gray-950/80 backdrop-blur sticky top-0 z-50">
@@ -25,25 +27,53 @@ export function Navbar() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-1">
-            {links.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className={clsx(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  pathname === href
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-400 hover:text-white hover:bg-gray-800/50"
-                )}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </Link>
-            ))}
-          </div>
+          <>
+            <div className="hidden sm:flex items-center gap-1">
+              {links.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={clsx(
+                    "flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                    pathname === href
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-400 hover:text-white hover:bg-gray-800/50"
+                  )}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </Link>
+              ))}
+            </div>
+
+            <button
+              className="sm:hidden p-2 text-gray-400 hover:text-white"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </>
         </div>
       </div>
+
+      {mobileOpen && (
+        <div className="sm:hidden border-t border-gray-800 py-2">
+          {links.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMobileOpen(false)}
+              className={clsx(
+                "flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
+                pathname === href ? "text-white bg-gray-800" : "text-gray-400 hover:text-white"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </Link>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }

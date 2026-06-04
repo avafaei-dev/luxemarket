@@ -80,3 +80,17 @@ valuate-api:
 # Open API docs
 docs:
 	open http://localhost:8000/docs
+
+# ── Frontend ──────────────────────────────────────────────────────────────────
+
+frontend-install:
+	cd frontend && npm install
+
+frontend-dev:
+	cd frontend && npm run dev
+
+frontend-build:
+	cd frontend && npm run build
+
+frontend-lint:
+	cd frontend && npm run lint
