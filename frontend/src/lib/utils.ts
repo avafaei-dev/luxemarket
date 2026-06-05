@@ -51,3 +51,11 @@ export function conditionLabel(condition: string | null): string {
     default: return condition ?? "Unknown";
   }
 }
+
+export function conditionStyle(condition: string | null): string {
+    switch (condition) {
+      case "new": return "bg-accent-muted text-accent border-accent-border";
+      case "cpo": return "bg-deal-great-bg text-deal-great border-deal-great-border";
+      default: return "bg-surface-tertiary text-ink-secondary border-surface-border-strong";
+    }
+  }

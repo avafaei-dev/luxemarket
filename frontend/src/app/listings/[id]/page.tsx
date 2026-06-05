@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, MapPin, Calendar, Gauge } from "lucide-react";
 import { Listing, getListing, searchListings } from "@/lib/api";
@@ -12,6 +11,21 @@ import { SpecTable } from "@/components/SpecTable";
 import { ListingCard } from "@/components/ListingCard";
 import { ListingCardSkeleton } from "@/components/ListingCardSkeleton";
 import { formatPrice, formatMileage, conditionLabel } from "@/lib/utils";
+
+const MAKE_COLORS: Record<string, string> = {
+    "BMW": "#1C3557",
+    "Mercedes-Benz": "#222222",
+    "Porsche": "#8B0000",
+    "Audi": "#CC0000",
+    "Ferrari": "#CC0000",
+    "Lamborghini": "#1A1A2E",
+    "Bentley": "#1B4332",
+    "Rolls-Royce": "#2C2C54",
+    "McLaren": "#FF4700",
+    "Aston Martin": "#1A3A2A",
+    "Maserati": "#00274D",
+    "Lexus": "#2D2D2D",
+  };
 
 export default function ListingDetailPage() {
     const params = useParams();
@@ -89,32 +103,21 @@ export default function ListingDetailPage() {
       </button>
 
       {/* Hero image */}
-      <div className="relative h-80 md:h-96 rounded-xl overflow-hidden bg-gray-800">
-        {listing.images?.[0] ? (
-          <Image
-            src={listing.images[0]}
-            alt={`${listing.year} ${listing.make} ${listing.model}`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 960px"
-            priority
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-600">
-            No image available
-          </div>
-        )}
-        {/* Image thumbnails */}
-        {listing.images && listing.images.length > 1 && (
-          <div className="absolute bottom-3 left-3 flex gap-2">
-            {listing.images.slice(1, 4).map((img: string, i: number) => (
-              <div key={i} className="w-16 h-12 rounded-lg overflow-hidden border border-white/20">
-                <Image src={img} alt="" width={64} height={48} className="object-cover w-full h-full" />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+{/* Hero — branded make placeholder */}
+<div
+  className="relative h-80 md:h-96 rounded-2xl overflow-hidden"
+  style={{ backgroundColor: MAKE_COLORS[listing.make] ?? "#2D2D2D" }}
+>
+  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-black/40" />
+  <div className="absolute inset-0 flex flex-col items-center justify-center">
+    <span className="text-8xl font-bold text-white/15 tracking-tighter select-none">
+      {listing.make.split("-")[0].toUpperCase()}
+    </span>
+    <span className="text-sm font-semibold text-white/40 uppercase tracking-[0.25em] mt-3">
+      {listing.model}
+    </span>
+  </div>
+</div>
 
       {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
