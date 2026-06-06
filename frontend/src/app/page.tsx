@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Car, TrendingUp, DollarSign, Award } from "lucide-react";
 import { searchListings, getTrendsSummary, Listing } from "@/lib/api";
@@ -26,7 +26,14 @@ export default function Home() {
   }, [query]);
 
   // Reset to page 1 when filters change
-  useEffect(() => { setPage(1); }, [filters, debouncedQuery]);
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+    }
+    setPage(1);
+  }, [filters, debouncedQuery]);
 
   const { data: summary } = useQuery({
     queryKey: ["trends-summary"],

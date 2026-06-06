@@ -62,14 +62,17 @@ export function FilterSidebar({ filters, onChange, totalResults }: Props) {
   }, []);
 
   useEffect(() => {
-    if (filters.make) {
-      getModels(filters.make).then((data) =>
-        setModels(data.map((m) => m.model))
-      );
-    } else {
-      setModels([]);
-    }
+    if (!filters.make) return;
+    let cancelled = false;
+    getModels(filters.make).then((data) => {
+      if (!cancelled) setModels(data.map((m) => m.model));
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [filters.make]);
+  
+  const displayModels = filters.make ? models : [];
 
   const set = (key: keyof Filters, value: string) => {
     const next = { ...filters, [key]: value };
@@ -124,18 +127,18 @@ export function FilterSidebar({ filters, onChange, totalResults }: Props) {
           </FilterSection>
 
           {/* Model */}
-          {models.length > 0 && (
+          {displayModels.length > 0 && (
             <FilterSection label="Model">
-              <Select
+            <Select
                 value={filters.model}
                 onChange={(v) => set("model", v)}
                 options={[
-                  { value: "", label: "All models" },
-                  ...models.map((m) => ({ value: m, label: m })),
+                    { value: "", label: "All models" },
+                    ...displayModels.map((m) => ({ value: m, label: m })),
                 ]}
-              />
-            </FilterSection>
-          )}
+            />
+        </FilterSection>
+    )}
 
           {/* Condition */}
           <FilterSection label="Condition">

@@ -5,12 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, BarChart2, DollarSign } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ScatterChart, Scatter, Cell,
-  PieChart, Pie, Legend,
+  ResponsiveContainer, Cell,
+  PieChart, Pie,
 } from "recharts";
 import { getTrends, getTrendsSummary } from "@/lib/api";
 import { StatCard } from "@/components/StatCard";
-import { formatPrice, formatNumber, scoreColor } from "@/lib/utils";
+import { formatPrice, formatNumber } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { MarketSnapshot } from "@/lib/api";
 
@@ -37,6 +37,38 @@ const MAKES = [
   "Aston Martin", "Maserati", "Lexus",
 ];
 
+interface TooltipPayloadItem {
+    name: string;
+    value: number;
+    color?: string;
+    fill?: string;
+  }
+  
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: TooltipPayloadItem[];
+    label?: string;
+  }
+  
+  function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="bg-white border border-surface-border rounded-xl p-3 text-sm shadow-card-hover">
+        <p className="font-medium text-ink mb-1">{label}</p>
+        {payload.map((p) => (
+          <p key={p.name} style={{ color: p.color ?? p.fill }}>
+            {p.name}:{" "}
+            {p.name.toLowerCase().includes("price")
+              ? formatPrice(p.value)
+              : p.name.toLowerCase().includes("score")
+              ? p.value?.toFixed(1)
+              : formatNumber(p.value)}
+          </p>
+        ))}
+      </div>
+    );
+  }
+
 export default function TrendsPage() {
   const [selectedMake, setSelectedMake] = useState<string>("");
 
@@ -53,14 +85,14 @@ export default function TrendsPage() {
 
   // Aggregate by make for the overview charts
   const byMake = MAKES.map((make) => {
-    const makeSnapshots = trends?.filter((t: { make: string; }) => t.make === make) ?? [];
-    if (makeSnapshots.length === 0) return null;
-    const avgPrice =
-      makeSnapshots.reduce((s: any, t: { avg_price: any; }) => s + t.avg_price, 0) / makeSnapshots.length;
-    const avgScore =
-      makeSnapshots.reduce((s: any, t: { avg_deal_score: any; }) => s + (t.avg_deal_score ?? 0), 0) /
-      makeSnapshots.length;
-    const totalListings = makeSnapshots.reduce((s: any, t: { listing_count: any; }) => s + t.listing_count, 0);
+    const makeSnapshots: MarketSnapshot[] = trends?.filter((t: MarketSnapshot) => t.make === make) ?? [];
+if (makeSnapshots.length === 0) return null;
+const avgPrice =
+  makeSnapshots.reduce((s: number, t: MarketSnapshot) => s + t.avg_price, 0) / makeSnapshots.length;
+const avgScore =
+  makeSnapshots.reduce((s: number, t: MarketSnapshot) => s + (t.avg_deal_score ?? 0), 0) /
+  makeSnapshots.length;
+const totalListings = makeSnapshots.reduce((s: number, t: MarketSnapshot) => s + t.listing_count, 0);
     return { make, avgPrice, avgScore, totalListings };
   }).filter(Boolean) as { make: string; avgPrice: number; avgScore: number; totalListings: number }[];
 
@@ -71,23 +103,7 @@ export default function TrendsPage() {
         .sort((a: { avg_price: number; }, b: { avg_price: number; }) => b.avg_price - a.avg_price)
     : [];
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null;
-    return (
-      <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm shadow-xl">
-        <p className="font-medium text-white mb-1">{label}</p>
-        {payload.map((p: any) => (
-          <p key={p.name} style={{ color: p.color ?? p.fill }}>
-            {p.name}: {p.name.toLowerCase().includes("price")
-              ? formatPrice(p.value)
-              : p.name.toLowerCase().includes("score")
-              ? p.value?.toFixed(1)
-              : formatNumber(p.value)}
-          </p>
-        ))}
-      </div>
-    );
-  };
+
 
   return (
     <div className="space-y-8">

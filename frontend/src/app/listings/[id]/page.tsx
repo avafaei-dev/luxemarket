@@ -2,14 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { ArrowLeft, ExternalLink, MapPin, Calendar, Gauge } from "lucide-react";
 import { Listing, getListing, searchListings } from "@/lib/api";
 import { DealScoreBadge } from "@/components/DealScoreBadge";
 import { PriceVsValueBar } from "@/components/PriceVsValueBar";
 import { SpecTable } from "@/components/SpecTable";
 import { ListingCard } from "@/components/ListingCard";
-import { ListingCardSkeleton } from "@/components/ListingCardSkeleton";
 import { formatPrice, formatMileage, conditionLabel } from "@/lib/utils";
 
 const MAKE_COLORS: Record<string, string> = {
